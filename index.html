@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<!-- saved from url=(0052)file:///C:/Users/HH%20TRADERS/Downloads/index_6.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Register — School Records System</title>
+
+<!-- ====== FIREBASE (this is what makes data shared across everyone who opens the site) ====== -->
+<script src="./index_files/firebase-app-compat.js.download"></script>
+<script src="./index_files/firebase-firestore-compat.js.download"></script>
+<script>
+  // PASTE your Firebase config here — you'll get this from the Firebase console.
+  const firebaseConfig = {
+    apiKey: "AIzaSyB_EtLxS57XESeMxT16yCJmIHBsn3HL_Z8",
+    authDomain: "st-jhon-school-records.firebaseapp.com",
+    projectId: "st-jhon-school-records",
+    storageBucket: "st-jhon-school-records.firebasestorage.app",
+    messagingSenderId: "585634323521",
+    appId: "1:585634323521:web:955abbd1b1be1534a03ac0"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+</script>
+<!-- ====== END FIREBASE SETUP ====== -->
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bitter:ital,wght@0,500;0,600;0,700;1,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+  :root{
+    --paper: #FAF6EC;
+    --paper-dim: #F1EBDB;
+    --ink: #24303D;
+    --ink-soft: #5B6472;
+    --red: #A8352E;
+    --red-soft: #C97570;
+    --green: #2F6B4F;
+    --gold: #B98A2E;
+    --line: #D8D0B8;
+    --line-strong: #C9C2AF;
+    --white: #FFFDF7;
+    --shadow: 0 1px 0 rgba(36,48,61,0.06);
+  }
+
+  *{ box-sizing: border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background: var(--paper);
+    background-image: repeating-linear-gradient(0deg, transparent, transparent 27px, rgba(36,48,61,0.035) 28px);
+    color: var(--ink);
+    font-family: 'IBM Plex Sans', sans-serif;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1,h2,h3{ font-family:'Bitter', serif; font-weight:700; margin:0; }
+  .mono{ font-family:'IBM Plex Mono', monospace; }
+  a, button{ font-family: inherit; }
+  button{ cursor:pointer; }
+  input, select, textarea{ font-family:'IBM Plex Sans', sans-serif; font-size:14px; }
+  ::selection{ background: var(--gold); color: var(--white); }
+
+  .screen{ min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px; }
+  .app{ display:none; max-width: 1040px; margin: 0 auto; padding: 28px 20px 80px; }
+  .app.active{ display:block; }
+
+  .cover{
+    width: 100%; max-width: 420px; background: var(--white);
+    border: 1px solid var(--line-strong); border-radius: 4px;
+    box-shadow: 0 18px 40px -20px rgba(36,48,61,0.35), var(--shadow);
+    padding: 40px 36px 32px; position: relative;
+  }
+  .cover::before{ content:""; position:absolute; left:22px; top:0; bottom:0; width:1px; background: var(--line-strong); }
+  .cover-eyebrow{ font-family:'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--red); margin-bottom: 10px; padding-left: 14px; }
+  .cover h1{ font-size: 24px; line-height:1.15; padding-left:14px; }
+  .cover .sub{ color: var(--ink-soft); font-size:13.5px; margin: 8px 0 26px; padding-left:14px; }
+  .field{ margin-bottom: 16px; padding-left: 14px; }
+  .field label{ display:block; font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-soft); margin-bottom: 6px; }
+  .field input, .field select{
+    width:100%; padding: 10px 12px; border: 1px solid var(--line-strong); border-radius: 3px;
+    background: var(--paper); color: var(--ink); outline:none;
+  }
+  .field input:focus, .field select:focus{ border-color: var(--ink); box-shadow: 0 0 0 3px rgba(36,48,61,0.08); }
+  .btn{ border:none; border-radius: 3px; padding: 11px 18px; font-size: 14px; font-weight:600; display:inline-flex; align-items:center; justify-content:center; gap:8px; }
+  .btn-primary{ background: var(--ink); color: var(--white); width:100%; }
+  .btn-primary:hover{ background:#101923; }
+  .btn-ghost{ background: transparent; color: var(--ink-soft); border: 1px solid var(--line-strong); }
+  .btn-ghost:hover{ color:var(--ink); border-color:var(--ink); }
+  .btn-small{ padding: 6px 10px; font-size:12.5px; }
+  .link-btn{ background:none; border:none; color:var(--ink-soft); font-size:12.5px; text-decoration:underline; padding-left:14px; }
+  .link-btn:hover{ color: var(--ink); }
+  .cover-foot{ margin-top:6px; padding-left:14px; }
+  .err{ color: var(--red); font-size: 12.5px; margin: -6px 0 14px; padding-left:14px; display:none; }
+  .err.show{ display:block; }
+
+  .topbar{ display:flex; align-items:flex-end; justify-content:space-between; border-bottom: 2px solid var(--ink); padding-bottom: 14px; margin-bottom: 22px; flex-wrap:wrap; gap:12px; }
+  .brand-eyebrow{ font-family:'IBM Plex Mono', monospace; font-size:11px; letter-spacing:0.14em; text-transform:uppercase; color:var(--red); margin-bottom:4px; }
+  .brand h1{ font-size: 24px; }
+  .who{ text-align:right; }
+  .who .name{ font-weight:600; font-size:14px; }
+  .who button{ margin-top:6px; }
+  .role-badge{ font-family:'IBM Plex Mono', monospace; font-size:9.5px; text-transform:uppercase; letter-spacing:0.07em; padding:2px 8px; border-radius:10px; border:1px solid var(--gold); color:var(--gold); margin-left:6px; vertical-align:middle; }
+
+  .tabs{ display:flex; gap:4px; margin-bottom: 20px; border-bottom:1px solid var(--line-strong); overflow-x:auto; white-space:nowrap; }
+  .tab{ background:none; border:none; padding: 10px 16px; font-size: 13.5px; font-weight:600; color: var(--ink-soft); border-bottom: 2px solid transparent; margin-bottom:-1px; }
+  .tab.active{ color: var(--ink); border-bottom-color: var(--red); }
+  .tab:hover{ color: var(--ink); }
+
+  .subtabs{ display:flex; gap:8px; margin-bottom:18px; }
+  .subtab{ background: var(--paper-dim); border:1px solid var(--line-strong); border-radius:20px; padding:6px 16px; font-size:12.5px; font-weight:600; color:var(--ink-soft); }
+  .subtab.active{ background: var(--ink); color:var(--white); border-color:var(--ink); }
+
+  .panel{ display:none; }
+  .panel.active{ display:block; }
+  .subpanel{ display:none; }
+  .subpanel.active{ display:block; }
+
+  .card{ background: var(--white); border:1px solid var(--line-strong); border-radius:4px; padding: 22px; box-shadow: var(--shadow); }
+  .card + .card{ margin-top:18px; }
+  .card h2{ font-size:16px; margin-bottom: 16px; }
+  .card h2 .num{ font-family:'IBM Plex Mono', monospace; color: var(--red); margin-right:8px; font-size:14px; }
+
+  .grid2{ display:grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .grid3{ display:grid; grid-template-columns: 1fr 1fr 1fr; gap:14px; }
+  .grid4{ display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap:14px; }
+  @media (max-width: 720px){ .grid2, .grid3, .grid4{ grid-template-columns: 1fr; } }
+
+  .status-toggle{ display:flex; gap:10px; }
+  .status-opt{ flex:1; border:1.5px solid var(--line-strong); border-radius:3px; padding: 12px; text-align:center; font-weight:600; font-size:13.5px; color: var(--ink-soft); }
+  .status-opt.checked-on{ border-color: var(--green); color: var(--green); background: rgba(47,107,79,0.06); }
+  .status-opt.notchecked-on{ border-color: var(--red); color: var(--red); background: rgba(168,53,46,0.06); }
+
+  .form-actions{ margin-top:18px; display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+
+  .filters{ display:flex; flex-wrap:wrap; gap:10px; margin-bottom:16px; align-items:flex-end; }
+  .filters .field{ padding-left:0; margin-bottom:0; min-width:140px; flex:1; }
+  .filters .field.search{ flex:2; min-width:200px; }
+
+  .ledger{ width:100%; border-collapse: collapse; font-size: 13px; }
+  .ledger thead th{ text-align:left; font-family:'IBM Plex Mono', monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:0.06em; color: var(--ink-soft); border-bottom: 1.5px solid var(--ink); padding: 8px 10px; }
+  .ledger tbody td{ padding: 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .ledger tbody tr:hover{ background: rgba(185,138,46,0.06); }
+  .regno{ font-family:'IBM Plex Mono', monospace; color: var(--ink-soft); font-size:12px; }
+  .remarks-cell{ max-width: 200px; color: var(--ink-soft); }
+
+  .stamp{ display:inline-block; font-family:'IBM Plex Mono', monospace; font-size: 10.5px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; padding: 3px 9px; border-radius: 2px; border: 1.5px solid currentColor; transform: rotate(-2deg); }
+  .stamp.ok{ color: var(--green); }
+  .stamp.no{ color: var(--red); }
+
+  .icon-btn{ background:none; border:none; color: var(--ink-soft); font-size:12px; padding:4px 6px; }
+  .icon-btn:hover{ color: var(--red); }
+
+  .empty{ text-align:center; padding: 48px 20px; color: var(--ink-soft); }
+  .empty .big{ font-family:'Bitter', serif; font-size:18px; color: var(--ink); margin-bottom:6px; }
+
+  .chip-list{ display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+  .chip{ display:flex; align-items:center; gap:8px; background: var(--paper-dim); border:1px solid var(--line-strong); border-radius: 20px; padding: 6px 8px 6px 14px; font-size:13px; }
+  .chip button{ background:none; border:none; color: var(--ink-soft); font-size:14px; line-height:1; padding:0 2px; }
+  .chip button:hover{ color: var(--red); }
+  .add-row{ display:flex; gap:8px; margin-top:14px; flex-wrap:wrap; }
+  .add-row input, .add-row select{ flex:1; padding:8px 10px; border:1px solid var(--line-strong); border-radius:3px; background:var(--paper); min-width:120px; }
+
+  .teacher-row{ display:flex; align-items:center; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--line); }
+  .teacher-row:last-child{ border-bottom:none; }
+  .teacher-row .t-name{ font-weight:600; font-size:13.5px; }
+
+  .toast{ position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--ink); color: var(--white); padding: 11px 20px; border-radius: 4px; font-size:13.5px; opacity:0; pointer-events:none; transition: all 0.25s ease; z-index: 50; }
+  .toast.show{ opacity:1; transform: translateX(-50%) translateY(0); }
+
+  .hint{ font-size:12px; color: var(--ink-soft); margin-top:4px; }
+  .roster-input{ width:100%; padding:7px 9px; border:1px solid var(--line-strong); border-radius:3px; background:var(--paper); }
+  .pct-good{ color: var(--green); font-weight:600; }
+  .pct-bad{ color: var(--red); font-weight:600; }
+</style>
+</head>
+<body>
+
+<!-- SETUP SCREEN -->
+<div class="screen" id="setupScreen">
+  <div class="cover">
+    <div class="cover-eyebrow">Register — First Setup</div>
+    <h1>Set up the system</h1>
+    <div class="sub">No accounts exist yet. Create the first one — usually the principal or admin — to get started.</div>
+    <div class="field"><label>Your name</label><input id="setupName" type="text" placeholder="e.g. Mrs. Fatima Khan"></div>
+    <div class="field"><label>Role</label>
+      <select id="setupRole"><option value="Teacher">Teacher</option><option value="Principal">Principal</option></select>
+    </div>
+    <div class="field"><label>Choose a password</label><input id="setupPass" type="password" placeholder="At least 4 characters"></div>
+    <div class="err" id="setupErr"></div>
+    <button class="btn btn-primary" onclick="doSetup()">Create account &amp; open system</button>
+    <div class="hint" style="padding-left:14px;">More accounts can be added later under Manage.</div>
+  </div>
+</div>
+
+<!-- LOGIN SCREEN -->
+<div class="screen" id="loginScreen" style="display:none;">
+  <div class="cover">
+    <div class="cover-eyebrow">The Register</div>
+    <h1>School Records System</h1>
+    <div class="sub">Sign in with your name to check copies, record fees, or log exam scores.</div>
+    <div class="field"><label>Name</label><input id="loginId" type="text" placeholder="Your full name"></div>
+    <div class="field"><label>Password</label><input id="loginPass" type="password" placeholder="Your password"></div>
+    <div class="err" id="loginErr"></div>
+    <button class="btn btn-primary" onclick="doLogin()">Sign in</button>
+    <div class="cover-foot"><button class="link-btn" onclick="showAddTeacherFromLogin()">New here? Add your account</button></div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div class="app" id="mainApp">
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-eyebrow">Central School Database</div>
+      <h1>School Records System</h1>
+    </div>
+    <div class="who">
+      <div class="name"><span id="whoName">—</span><span class="role-badge" id="whoRole"></span></div>
+      <button class="btn btn-ghost btn-small" onclick="logout()">Sign out</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="copy" onclick="switchTab(&#39;copy&#39;)">Copy Checking</button>
+    <button class="tab" data-tab="fees" onclick="switchTab(&#39;fees&#39;)">Fees</button>
+    <button class="tab" data-tab="exams" onclick="switchTab(&#39;exams&#39;)">Exams</button>
+    <button class="tab" data-tab="manage" onclick="switchTab(&#39;manage&#39;)">Manage</button>
+  </div>
+
+  <!-- ============ COPY CHECKING MODULE ============ -->
+  <div class="panel active" id="panel-copy">
+    <div class="subtabs">
+      <button class="subtab active" id="sub-copy-log" onclick="switchSub(&#39;copy&#39;,&#39;log&#39;)">Log</button>
+      <button class="subtab" id="sub-copy-records" onclick="switchSub(&#39;copy&#39;,&#39;records&#39;)">Records</button>
+    </div>
+
+    <div class="subpanel active" id="sp-copy-log">
+      <div class="card">
+        <h2><span class="num">01</span>Log a copy check</h2>
+        <div class="grid3">
+          <div class="field" style="padding:0;"><label>Subject</label><select id="copySubject" onchange="renderCopyRoster()"></select></div>
+          <div class="field" style="padding:0;"><label>Class</label><select id="copyClass" onchange="renderCopyRoster()"></select></div>
+          <div class="field" style="padding:0;"><label>Date</label><input id="copyDate" type="date" onchange="renderCopyRoster()"></div>
+        </div>
+        <div class="form-actions" style="margin-top:14px; margin-bottom:4px;">
+          <button class="btn btn-ghost btn-small" onclick="markAllCopy(&#39;Checked&#39;)">Mark all Checked</button>
+          <button class="btn btn-ghost btn-small" onclick="markAllCopy(&#39;Not Checked&#39;)">Mark all Not Checked</button>
+        </div>
+        <div id="copyRoster"></div>
+        <div class="form-actions">
+          <button class="btn btn-primary" style="width:auto;" onclick="submitCopySession()">Save session</button>
+          <span class="hint" id="copyHint"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="subpanel" id="sp-copy-records">
+      <div class="card">
+        <h2><span class="num">02</span>Copy checking records</h2>
+        <div class="filters">
+          <div class="field"><label>Subject</label><select id="cFilterSubject"><option value="">All</option></select></div>
+          <div class="field"><label>Class</label><select id="cFilterClass"><option value="">All</option></select></div>
+          <div class="field"><label>Teacher</label><select id="cFilterTeacher"><option value="">All</option></select></div>
+          <div class="field"><label>Status</label><select id="cFilterStatus"><option value="">All</option><option value="Checked">Checked</option><option value="Not Checked">Not Checked</option></select></div>
+          <div class="field search"><label>Search student / remarks</label><input id="cFilterSearch" type="text" placeholder="Search..."></div>
+        </div>
+        <div id="copyRecordsWrap"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ FEES MODULE ============ -->
+  <div class="panel" id="panel-fees">
+    <div class="subtabs">
+      <button class="subtab active" id="sub-fees-log" onclick="switchSub(&#39;fees&#39;,&#39;log&#39;)">Log</button>
+      <button class="subtab" id="sub-fees-records" onclick="switchSub(&#39;fees&#39;,&#39;records&#39;)">Records</button>
+    </div>
+
+    <div class="subpanel active" id="sp-fees-log">
+      <div class="card">
+        <h2><span class="num">01</span>Log fee collection</h2>
+        <div class="grid3">
+          <div class="field" style="padding:0;"><label>Class</label><select id="feeClass" onchange="renderFeesRoster()"></select></div>
+          <div class="field" style="padding:0;"><label>Month</label><input id="feeMonth" type="text" placeholder="e.g. August 2026" onchange="renderFeesRoster()"></div>
+          <div class="field" style="padding:0;"><label>Date</label><input id="feeDate" type="date" onchange="renderFeesRoster()"></div>
+        </div>
+        <div class="form-actions" style="margin-top:14px; margin-bottom:4px;">
+          <button class="btn btn-ghost btn-small" onclick="markAllFees(&#39;Paid&#39;)">Mark all Paid</button>
+          <button class="btn btn-ghost btn-small" onclick="markAllFees(&#39;Unpaid&#39;)">Mark all Unpaid</button>
+        </div>
+        <div id="feesRoster"></div>
+        <div class="form-actions">
+          <button class="btn btn-primary" style="width:auto;" onclick="submitFeesSession()">Save session</button>
+          <span class="hint" id="feesHint"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="subpanel" id="sp-fees-records">
+      <div class="card">
+        <h2><span class="num">02</span>Fee records</h2>
+        <div class="filters">
+          <div class="field"><label>Class</label><select id="fFilterClass"><option value="">All</option></select></div>
+          <div class="field"><label>Month</label><input id="fFilterMonth" type="text" placeholder="Filter by month..."></div>
+          <div class="field"><label>Status</label><select id="fFilterStatus"><option value="">All</option><option value="Paid">Paid</option><option value="Unpaid">Unpaid</option></select></div>
+          <div class="field search"><label>Search student / remarks</label><input id="fFilterSearch" type="text" placeholder="Search..."></div>
+        </div>
+        <div id="feesRecordsWrap"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ EXAMS MODULE ============ -->
+  <div class="panel" id="panel-exams">
+    <div class="subtabs">
+      <button class="subtab active" id="sub-exams-log" onclick="switchSub(&#39;exams&#39;,&#39;log&#39;)">Log</button>
+      <button class="subtab" id="sub-exams-records" onclick="switchSub(&#39;exams&#39;,&#39;records&#39;)">Records</button>
+    </div>
+
+    <div class="subpanel active" id="sp-exams-log">
+      <div class="card">
+        <h2><span class="num">01</span>Log exam scores</h2>
+        <div class="grid4">
+          <div class="field" style="padding:0;"><label>Subject</label><select id="examSubject" onchange="renderExamsRoster()"></select></div>
+          <div class="field" style="padding:0;"><label>Class</label><select id="examClass" onchange="renderExamsRoster()"></select></div>
+          <div class="field" style="padding:0;"><label>Exam name</label><input id="examName" type="text" placeholder="e.g. Mid Term" onchange="renderExamsRoster()"></div>
+          <div class="field" style="padding:0;"><label>Total marks</label><input id="examTotal" type="number" min="1" placeholder="e.g. 100" onchange="renderExamsRoster()"></div>
+        </div>
+        <div class="field" style="padding:0; max-width:220px; margin-top:14px;"><label>Date</label><input id="examDate" type="date"></div>
+        <div id="examsRoster" style="margin-top:14px;"></div>
+        <div class="form-actions">
+          <button class="btn btn-primary" style="width:auto;" onclick="submitExamsSession()">Save session</button>
+          <span class="hint" id="examsHint"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="subpanel" id="sp-exams-records">
+      <div class="card">
+        <h2><span class="num">02</span>Exam records</h2>
+        <div class="filters">
+          <div class="field"><label>Subject</label><select id="eFilterSubject"><option value="">All</option></select></div>
+          <div class="field"><label>Class</label><select id="eFilterClass"><option value="">All</option></select></div>
+          <div class="field"><label>Exam</label><input id="eFilterExam" type="text" placeholder="Filter by exam name..."></div>
+          <div class="field search"><label>Search student / remarks</label><input id="eFilterSearch" type="text" placeholder="Search..."></div>
+        </div>
+        <div id="examsRecordsWrap"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ MANAGE ============ -->
+  <div class="panel" id="panel-manage">
+    <div class="card">
+      <h2><span class="num">01</span>Subjects</h2>
+      <div class="chip-list" id="subjectChips"></div>
+      <div class="add-row"><input id="newSubject" type="text" placeholder="Add a subject, e.g. Mathematics"><button class="btn btn-ghost btn-small" onclick="addSubject()">Add</button></div>
+    </div>
+    <div class="card">
+      <h2><span class="num">02</span>Classes</h2>
+      <div class="chip-list" id="classChips"></div>
+      <div class="add-row"><input id="newClass" type="text" placeholder="Add a class, e.g. Grade 6 - Blue"><button class="btn btn-ghost btn-small" onclick="addClass()">Add</button></div>
+    </div>
+    <div class="card">
+      <h2><span class="num">03</span>Students</h2>
+      <div class="field" style="padding:0; max-width:280px;"><label>Class roster to edit</label><select id="rosterClassPicker" onchange="renderRosterManage()"></select></div>
+      <div class="chip-list" id="studentChips"></div>
+      <div class="add-row"><input id="newStudent" type="text" placeholder="Add a student name"><button class="btn btn-ghost btn-small" onclick="addStudent()">Add</button></div>
+      <div class="hint">Students added here appear in every module's Log screen for that class.</div>
+    </div>
+    <div class="card">
+      <h2><span class="num">04</span>Accounts</h2>
+      <div id="teacherList"></div>
+      <div class="add-row">
+        <input id="mgrName" type="text" placeholder="Full name">
+        <select id="mgrRole"><option value="Teacher">Teacher</option><option value="Principal">Principal</option></select>
+        <input id="mgrPass" type="password" placeholder="Password">
+        <button class="btn btn-ghost btn-small" onclick="addTeacher()">Add account</button>
+      </div>
+      <div class="err" id="mgrErr"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  // ---------------- State ----------------
+  let teachers = [];
+  let subjects = [];
+  let classes = [];
+  let students = {};
+  let copyRecords = [];
+  let feeRecords = [];
+  let examRecords = [];
+  let currentTeacher = null;
+  let draftCopy = {};
+  let draftFees = {};
+  let draftExams = {};
+
+  const K_TEACHERS = 'ccr:teachers';
+  const K_SUBJECTS = 'ccr:subjects';
+  const K_CLASSES  = 'ccr:classes';
+  const K_STUDENTS = 'ccr:students';
+  const K_RECORDS  = 'ccr:records';
+  const K_FEES     = 'ccr:feeRecords';
+  const K_EXAMS    = 'ccr:examRecords';
+
+  async function safeGet(key, fallback){
+    try{
+      const doc = await db.collection('register').doc(key).get();
+      if(!doc.exists) return fallback;
+      return JSON.parse(doc.data().value);
+    }catch(e){ console.error('storage get failed', key, e); return fallback; }
+  }
+  async function safeSet(key, value){
+    try{ await db.collection('register').doc(key).set({ value: JSON.stringify(value) }); return true; }
+    catch(e){ console.error('storage set failed', key, e); return false; }
+  }
+
+  function toast(msg){
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    clearTimeout(window.__toastTimer);
+    window.__toastTimer = setTimeout(()=> t.classList.remove('show'), 2200);
+  }
+  function escapeHtml(str){ return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function cssId(name){ return name.replace(/[^a-zA-Z0-9]/g, '_'); }
+  function nameKey(n){ return n.trim().toLowerCase().replace(/\s+/g, ' '); }
+
+  // ---------------- Boot ----------------
+  async function boot(){
+    teachers = await safeGet(K_TEACHERS, []);
+    subjects = await safeGet(K_SUBJECTS, []);
+    classes  = await safeGet(K_CLASSES, []);
+    students = await safeGet(K_STUDENTS, {});
+    copyRecords = await safeGet(K_RECORDS, []);
+    feeRecords  = await safeGet(K_FEES, []);
+    examRecords = await safeGet(K_EXAMS, []);
+
+    if(subjects.length === 0){
+      subjects = ['English','Mathematics','Science','Urdu','Social Studies'];
+      await safeSet(K_SUBJECTS, subjects);
+    }
+    if(classes.length === 0){
+      const grades = ['Nursery','1','2','3','4','5','6','7','8','9','10'];
+      const sections = ['Blue','Green'];
+      classes = grades.flatMap(g => sections.map(s => `${g} - ${s}`));
+      await safeSet(K_CLASSES, classes);
+    }
+
+    const today = new Date().toISOString().slice(0,10);
+    document.getElementById('copyDate').value = today;
+    document.getElementById('feeDate').value = today;
+    document.getElementById('examDate').value = today;
+
+    if(teachers.length === 0){
+      document.getElementById('setupScreen').style.display = 'flex';
+    } else {
+      document.getElementById('loginScreen').style.display = 'flex';
+    }
+  }
+
+  // ---------------- Setup / Login ----------------
+  async function doSetup(){
+    const name = document.getElementById('setupName').value.trim();
+    const role = document.getElementById('setupRole').value;
+    const pass = document.getElementById('setupPass').value;
+    const err = document.getElementById('setupErr');
+    err.classList.remove('show');
+    if(!name || !pass){ err.textContent = 'Please fill in all fields.'; err.classList.add('show'); return; }
+    if(pass.length < 4){ err.textContent = 'Password should be at least 4 characters.'; err.classList.add('show'); return; }
+
+    teachers.push({ id: nameKey(name), password: pass, name, role });
+    await safeSet(K_TEACHERS, teachers);
+    currentTeacher = teachers[teachers.length-1];
+    document.getElementById('setupScreen').style.display = 'none';
+    enterApp();
+  }
+
+  function showAddTeacherFromLogin(){
+    document.getElementById('setupScreen').style.display = 'flex';
+    document.getElementById('loginScreen').style.display = 'none';
+  }
+
+  async function doLogin(){
+    const name = document.getElementById('loginId').value.trim();
+    const pass = document.getElementById('loginPass').value;
+    const err = document.getElementById('loginErr');
+    err.classList.remove('show');
+    teachers = await safeGet(K_TEACHERS, teachers);
+    const found = teachers.find(t => nameKey(t.name) === nameKey(name) && t.password === pass);
+    if(!found){ err.textContent = 'Name or password not recognized.'; err.classList.add('show'); return; }
+    currentTeacher = found;
+    document.getElementById('loginScreen').style.display = 'none';
+    enterApp();
+  }
+
+  function logout(){
+    currentTeacher = null;
+    document.getElementById('mainApp').classList.remove('active');
+    document.getElementById('loginId').value = '';
+    document.getElementById('loginPass').value = '';
+    document.getElementById('loginScreen').style.display = 'flex';
+  }
+
+  async function enterApp(){
+    document.getElementById('whoName').textContent = currentTeacher.name;
+    document.getElementById('whoRole').textContent = currentTeacher.role || 'Teacher';
+    document.getElementById('mainApp').classList.add('active');
+    await refreshAll();
+    switchTab('copy');
+  }
+
+  async function refreshAll(){
+    subjects = await safeGet(K_SUBJECTS, subjects);
+    classes  = await safeGet(K_CLASSES, classes);
+    teachers = await safeGet(K_TEACHERS, teachers);
+    students = await safeGet(K_STUDENTS, students);
+    copyRecords = await safeGet(K_RECORDS, copyRecords);
+    feeRecords  = await safeGet(K_FEES, feeRecords);
+    examRecords = await safeGet(K_EXAMS, examRecords);
+    renderSelects();
+    renderManage();
+    renderCopyRecords();
+    renderFeesRecords();
+    renderExamsRecords();
+    renderCopyRoster();
+    renderFeesRoster();
+    renderExamsRoster();
+  }
+
+  function fillSelect(el, list, withAll){
+    const current = el.value;
+    el.innerHTML = (withAll ? '<option value="">All</option>' : '') + list.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
+    el.value = list.includes(current) || (withAll && current==='') ? current : (list[0] || '');
+  }
+  function fillTeacherSelect(el){
+    const current = el.value;
+    el.innerHTML = '<option value="">All</option>' + teachers.map(t => `<option value="${escapeHtml(t.id)}">${escapeHtml(t.name)}</option>`).join('');
+    el.value = current;
+  }
+
+  function renderSelects(){
+    fillSelect(document.getElementById('copySubject'), subjects, false);
+    fillSelect(document.getElementById('copyClass'), classes, false);
+    fillSelect(document.getElementById('cFilterSubject'), subjects, true);
+    fillSelect(document.getElementById('cFilterClass'), classes, true);
+    fillTeacherSelect(document.getElementById('cFilterTeacher'));
+
+    fillSelect(document.getElementById('feeClass'), classes, false);
+    fillSelect(document.getElementById('fFilterClass'), classes, true);
+
+    fillSelect(document.getElementById('examSubject'), subjects, false);
+    fillSelect(document.getElementById('examClass'), classes, false);
+    fillSelect(document.getElementById('eFilterSubject'), subjects, true);
+    fillSelect(document.getElementById('eFilterClass'), classes, true);
+
+    fillSelect(document.getElementById('rosterClassPicker'), classes, false);
+  }
+
+  // ---------------- Tabs ----------------
+  function switchTab(name){
+    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('panel-' + name).classList.add('active');
+    if(name === 'copy'){ renderCopyRoster(); renderCopyRecords(); }
+    if(name === 'fees'){ renderFeesRoster(); renderFeesRecords(); }
+    if(name === 'exams'){ renderExamsRoster(); renderExamsRecords(); }
+    if(name === 'manage') renderManage();
+  }
+  function switchSub(mod, which){
+    document.getElementById('sub-'+mod+'-log').classList.toggle('active', which==='log');
+    document.getElementById('sub-'+mod+'-records').classList.toggle('active', which==='records');
+    document.getElementById('sp-'+mod+'-log').classList.toggle('active', which==='log');
+    document.getElementById('sp-'+mod+'-records').classList.toggle('active', which==='records');
+  }
+
+  // ================= COPY CHECKING =================
+  function renderCopyRoster(){
+    const cls = document.getElementById('copyClass').value;
+    const wrap = document.getElementById('copyRoster');
+    document.getElementById('copyHint').textContent = '';
+    const roster = students[cls] || [];
+    draftCopy = {};
+    if(roster.length === 0){
+      wrap.innerHTML = `<div class="empty"><div class="big">No students in this class yet</div>Add student names for "${escapeHtml(cls||'')}" under Manage → Students.</div>`;
+      return;
+    }
+    roster.forEach(n => draftCopy[n] = { status: null, remarks: '' });
+    wrap.innerHTML = `<table class="ledger"><thead><tr><th style="width:32%;">Student</th><th style="width:22%;">Status</th><th>Remarks</th></tr></thead><tbody>
+      ${roster.map(name => `
+        <tr>
+          <td>${escapeHtml(name)}</td>
+          <td><div class="status-toggle" style="gap:6px;">
+            <div class="status-opt btn-small" id="copy-ok-${cssId(name)}" style="padding:7px;" onclick="setCopyStatus('${escapeHtml(name)}','Checked')">✓</div>
+            <div class="status-opt btn-small" id="copy-no-${cssId(name)}" style="padding:7px;" onclick="setCopyStatus('${escapeHtml(name)}','Not Checked')">✕</div>
+          </div></td>
+          <td><input type="text" class="roster-input" placeholder="Optional remarks..." oninput="draftCopy['${escapeHtml(name)}'].remarks=this.value"></td>
+        </tr>`).join('')}
+    </tbody></table>`;
+  }
+  function setCopyStatus(name, status){
+    if(!draftCopy[name]) draftCopy[name] = { status:null, remarks:'' };
+    draftCopy[name].status = status;
+    document.getElementById('copy-ok-'+cssId(name))?.classList.toggle('checked-on', status==='Checked');
+    document.getElementById('copy-no-'+cssId(name))?.classList.toggle('notchecked-on', status==='Not Checked');
+  }
+  function markAllCopy(status){ Object.keys(draftCopy).forEach(n => setCopyStatus(n, status)); }
+
+  async function submitCopySession(){
+    const hint = document.getElementById('copyHint');
+    const subject = document.getElementById('copySubject').value;
+    const cls = document.getElementById('copyClass').value;
+    const date = document.getElementById('copyDate').value;
+    if(!subject || !cls){ hint.textContent = 'Add a subject and class under Manage first.'; hint.style.color='var(--red)'; return; }
+    if(!date){ hint.textContent = 'Please choose a date.'; hint.style.color='var(--red)'; return; }
+    const names = Object.keys(draftCopy);
+    if(names.length === 0){ hint.textContent = 'Add students to this class under Manage → Students first.'; hint.style.color='var(--red)'; return; }
+    const marked = names.filter(n => draftCopy[n].status);
+    if(marked.length === 0){ hint.textContent = 'Mark at least one student before saving.'; hint.style.color='var(--red)'; return; }
+
+    copyRecords = await safeGet(K_RECORDS, copyRecords);
+    let nextReg = copyRecords.reduce((m,r)=>Math.max(m,r.regNo||0),0)+1;
+    marked.forEach(name => {
+      copyRecords.push({ regNo: nextReg++, teacherId: currentTeacher.id, teacherName: currentTeacher.name, student: name, subject, class: cls, date, status: draftCopy[name].status, remarks: draftCopy[name].remarks.trim(), loggedAt: new Date().toISOString() });
+    });
+    await safeSet(K_RECORDS, copyRecords);
+    hint.style.color = 'var(--green)';
+    hint.textContent = `Saved ${marked.length} student${marked.length===1?'':'s'}.`;
+    if(marked.length === names.length) renderCopyRoster();
+    toast(`${marked.length} entr${marked.length===1?'y':'ies'} saved.`);
+    renderCopyRecords();
+  }
+
+  function renderCopyRecords(){
+    const wrap = document.getElementById('copyRecordsWrap');
+    const fSubject = document.getElementById('cFilterSubject').value;
+    const fClass = document.getElementById('cFilterClass').value;
+    const fTeacher = document.getElementById('cFilterTeacher').value;
+    const fStatus = document.getElementById('cFilterStatus').value;
+    const fSearch = document.getElementById('cFilterSearch').value.trim().toLowerCase();
+    let list = [...copyRecords].sort((a,b)=>b.regNo-a.regNo);
+    if(fSubject) list = list.filter(r=>r.subject===fSubject);
+    if(fClass) list = list.filter(r=>r.class===fClass);
+    if(fTeacher) list = list.filter(r=>r.teacherId===fTeacher);
+    if(fStatus) list = list.filter(r=>r.status===fStatus);
+    if(fSearch) list = list.filter(r => (r.student||'').toLowerCase().includes(fSearch) || (r.remarks||'').toLowerCase().includes(fSearch));
+    if(list.length===0){ wrap.innerHTML = `<div class="empty"><div class="big">No entries yet</div>Log your first copy check from the Log tab.</div>`; return; }
+    wrap.innerHTML = `<table class="ledger"><thead><tr><th>No.</th><th>Date</th><th>Student</th><th>Subject</th><th>Class</th><th>Status</th><th>Remarks</th><th>Teacher</th><th></th></tr></thead><tbody>
+      ${list.map(r => `<tr>
+        <td class="regno">#${String(r.regNo).padStart(3,'0')}</td>
+        <td>${escapeHtml(r.date)}</td>
+        <td>${escapeHtml(r.student||'—')}</td>
+        <td>${escapeHtml(r.subject)}</td>
+        <td>${escapeHtml(r.class)}</td>
+        <td><span class="stamp ${r.status==='Checked'?'ok':'no'}">${r.status==='Checked'?'✓ Checked':'✕ Not Checked'}</span></td>
+        <td class="remarks-cell">${escapeHtml(r.remarks||'—')}</td>
+        <td>${escapeHtml(r.teacherName)}</td>
+        <td>${r.teacherId===currentTeacher.id ? `<button class="icon-btn" onclick="deleteCopyRecord(${r.regNo})">Delete</button>` : ``}</td>
+      </tr>`).join('')}
+    </tbody></table>`;
+  }
+  async function deleteCopyRecord(regNo){
+    if(!confirm('Delete this entry? This cannot be undone.')) return;
+    copyRecords = await safeGet(K_RECORDS, copyRecords);
+    copyRecords = copyRecords.filter(r => !(r.regNo===regNo && r.teacherId===currentTeacher.id));
+    await safeSet(K_RECORDS, copyRecords);
+    toast('Entry deleted.'); renderCopyRecords();
+  }
+
+  // ================= FEES =================
+  function renderFeesRoster(){
+    const cls = document.getElementById('feeClass').value;
+    const wrap = document.getElementById('feesRoster');
+    document.getElementById('feesHint').textContent = '';
+    const roster = students[cls] || [];
+    draftFees = {};
+    if(roster.length === 0){
+      wrap.innerHTML = `<div class="empty"><div class="big">No students in this class yet</div>Add student names for "${escapeHtml(cls||'')}" under Manage → Students.</div>`;
+      return;
+    }
+    roster.forEach(n => draftFees[n] = { status: null, amount: '', remarks: '' });
+    wrap.innerHTML = `<table class="ledger"><thead><tr><th style="width:24%;">Student</th><th style="width:16%;">Amount</th><th style="width:20%;">Status</th><th>Remarks</th></tr></thead><tbody>
+      ${roster.map(name => `
+        <tr>
+          <td>${escapeHtml(name)}</td>
+          <td><input type="number" class="roster-input" placeholder="Rs." oninput="draftFees['${escapeHtml(name)}'].amount=this.value"></td>
+          <td><div class="status-toggle" style="gap:6px;">
+            <div class="status-opt btn-small" id="fee-ok-${cssId(name)}" style="padding:7px;" onclick="setFeeStatus('${escapeHtml(name)}','Paid')">Paid</div>
+            <div class="status-opt btn-small" id="fee-no-${cssId(name)}" style="padding:7px;" onclick="setFeeStatus('${escapeHtml(name)}','Unpaid')">Unpaid</div>
+          </div></td>
+          <td><input type="text" class="roster-input" placeholder="Optional remarks..." oninput="draftFees['${escapeHtml(name)}'].remarks=this.value"></td>
+        </tr>`).join('')}
+    </tbody></table>`;
+  }
+  function setFeeStatus(name, status){
+    if(!draftFees[name]) draftFees[name] = { status:null, amount:'', remarks:'' };
+    draftFees[name].status = status;
+    document.getElementById('fee-ok-'+cssId(name))?.classList.toggle('checked-on', status==='Paid');
+    document.getElementById('fee-no-'+cssId(name))?.classList.toggle('notchecked-on', status==='Unpaid');
+  }
+  function markAllFees(status){ Object.keys(draftFees).forEach(n => setFeeStatus(n, status)); }
+
+  async function submitFeesSession(){
+    const hint = document.getElementById('feesHint');
+    const cls = document.getElementById('feeClass').value;
+    const month = document.getElementById('feeMonth').value.trim();
+    const date = document.getElementById('feeDate').value;
+    if(!cls){ hint.textContent = 'Add a class under Manage first.'; hint.style.color='var(--red)'; return; }
+    if(!month){ hint.textContent = 'Please enter a month.'; hint.style.color='var(--red)'; return; }
+    if(!date){ hint.textContent = 'Please choose a date.'; hint.style.color='var(--red)'; return; }
+    const names = Object.keys(draftFees);
+    if(names.length === 0){ hint.textContent = 'Add students to this class under Manage → Students first.'; hint.style.color='var(--red)'; return; }
+    const marked = names.filter(n => draftFees[n].status);
+    if(marked.length === 0){ hint.textContent = 'Mark at least one student before saving.'; hint.style.color='var(--red)'; return; }
+
+    feeRecords = await safeGet(K_FEES, feeRecords);
+    let nextReg = feeRecords.reduce((m,r)=>Math.max(m,r.regNo||0),0)+1;
+    marked.forEach(name => {
+      feeRecords.push({ regNo: nextReg++, teacherId: currentTeacher.id, teacherName: currentTeacher.name, student: name, class: cls, month, amount: draftFees[name].amount || '', status: draftFees[name].status, remarks: draftFees[name].remarks.trim(), date, loggedAt: new Date().toISOString() });
+    });
+    await safeSet(K_FEES, feeRecords);
+    hint.style.color = 'var(--green)';
+    hint.textContent = `Saved ${marked.length} student${marked.length===1?'':'s'}.`;
+    if(marked.length === names.length) renderFeesRoster();
+    toast(`${marked.length} entr${marked.length===1?'y':'ies'} saved.`);
+    renderFeesRecords();
+  }
+
+  function renderFeesRecords(){
+    const wrap = document.getElementById('feesRecordsWrap');
+    const fClass = document.getElementById('fFilterClass').value;
+    const fMonth = document.getElementById('fFilterMonth').value.trim().toLowerCase();
+    const fStatus = document.getElementById('fFilterStatus').value;
+    const fSearch = document.getElementById('fFilterSearch').value.trim().toLowerCase();
+    let list = [...feeRecords].sort((a,b)=>b.regNo-a.regNo);
+    if(fClass) list = list.filter(r=>r.class===fClass);
+    if(fMonth) list = list.filter(r=>(r.month||'').toLowerCase().includes(fMonth));
+    if(fStatus) list = list.filter(r=>r.status===fStatus);
+    if(fSearch) list = list.filter(r => (r.student||'').toLowerCase().includes(fSearch) || (r.remarks||'').toLowerCase().includes(fSearch));
+    if(list.length===0){ wrap.innerHTML = `<div class="empty"><div class="big">No fee entries yet</div>Log the first fee collection from the Log tab.</div>`; return; }
+    wrap.innerHTML = `<table class="ledger"><thead><tr><th>No.</th><th>Date</th><th>Student</th><th>Class</th><th>Month</th><th>Amount</th><th>Status</th><th>Remarks</th><th>Teacher</th><th></th></tr></thead><tbody>
+      ${list.map(r => `<tr>
+        <td class="regno">#${String(r.regNo).padStart(3,'0')}</td>
+        <td>${escapeHtml(r.date)}</td>
+        <td>${escapeHtml(r.student||'—')}</td>
+        <td>${escapeHtml(r.class)}</td>
+        <td>${escapeHtml(r.month)}</td>
+        <td>${r.amount ? escapeHtml(String(r.amount)) : '—'}</td>
+        <td><span class="stamp ${r.status==='Paid'?'ok':'no'}">${r.status==='Paid'?'✓ Paid':'✕ Unpaid'}</span></td>
+        <td class="remarks-cell">${escapeHtml(r.remarks||'—')}</td>
+        <td>${escapeHtml(r.teacherName)}</td>
+        <td>${r.teacherId===currentTeacher.id ? `<button class="icon-btn" onclick="deleteFeeRecord(${r.regNo})">Delete</button>` : ``}</td>
+      </tr>`).join('')}
+    </tbody></table>`;
+  }
+  async function deleteFeeRecord(regNo){
+    if(!confirm('Delete this entry? This cannot be undone.')) return;
+    feeRecords = await safeGet(K_FEES, feeRecords);
+    feeRecords = feeRecords.filter(r => !(r.regNo===regNo && r.teacherId===currentTeacher.id));
+    await safeSet(K_FEES, feeRecords);
+    toast('Entry deleted.'); renderFeesRecords();
+  }
+
+  // ================= EXAMS =================
+  function renderExamsRoster(){
+    const cls = document.getElementById('examClass').value;
+    const total = document.getElementById('examTotal').value;
+    const wrap = document.getElementById('examsRoster');
+    document.getElementById('examsHint').textContent = '';
+    const roster = students[cls] || [];
+    draftExams = {};
+    if(roster.length === 0){
+      wrap.innerHTML = `<div class="empty"><div class="big">No students in this class yet</div>Add student names for "${escapeHtml(cls||'')}" under Manage → Students.</div>`;
+      return;
+    }
+    roster.forEach(n => draftExams[n] = { marks: '', remarks: '' });
+    wrap.innerHTML = `<table class="ledger"><thead><tr><th style="width:32%;">Student</th><th style="width:20%;">Marks obtained${total ? ' / '+escapeHtml(total) : ''}</th><th>Remarks</th></tr></thead><tbody>
+      ${roster.map(name => `
+        <tr>
+          <td>${escapeHtml(name)}</td>
+          <td><input type="number" min="0" class="roster-input" placeholder="Marks" oninput="draftExams['${escapeHtml(name)}'].marks=this.value"></td>
+          <td><input type="text" class="roster-input" placeholder="Optional remarks..." oninput="draftExams['${escapeHtml(name)}'].remarks=this.value"></td>
+        </tr>`).join('')}
+    </tbody></table>`;
+  }
+
+  async function submitExamsSession(){
+    const hint = document.getElementById('examsHint');
+    const subject = document.getElementById('examSubject').value;
+    const cls = document.getElementById('examClass').value;
+    const examNameVal = document.getElementById('examName').value.trim();
+    const total = parseFloat(document.getElementById('examTotal').value);
+    const date = document.getElementById('examDate').value;
+    if(!subject || !cls){ hint.textContent = 'Add a subject and class under Manage first.'; hint.style.color='var(--red)'; return; }
+    if(!examNameVal){ hint.textContent = 'Please name the exam (e.g. Mid Term).'; hint.style.color='var(--red)'; return; }
+    if(!total || total <= 0){ hint.textContent = 'Please enter total marks.'; hint.style.color='var(--red)'; return; }
+    if(!date){ hint.textContent = 'Please choose a date.'; hint.style.color='var(--red)'; return; }
+    const names = Object.keys(draftExams);
+    if(names.length === 0){ hint.textContent = 'Add students to this class under Manage → Students first.'; hint.style.color='var(--red)'; return; }
+    const marked = names.filter(n => draftExams[n].marks !== '' && draftExams[n].marks !== null);
+    if(marked.length === 0){ hint.textContent = 'Enter marks for at least one student before saving.'; hint.style.color='var(--red)'; return; }
+
+    examRecords = await safeGet(K_EXAMS, examRecords);
+    let nextReg = examRecords.reduce((m,r)=>Math.max(m,r.regNo||0),0)+1;
+    marked.forEach(name => {
+      examRecords.push({ regNo: nextReg++, teacherId: currentTeacher.id, teacherName: currentTeacher.name, student: name, subject, class: cls, examName: examNameVal, totalMarks: total, marksObtained: parseFloat(draftExams[name].marks), remarks: draftExams[name].remarks.trim(), date, loggedAt: new Date().toISOString() });
+    });
+    await safeSet(K_EXAMS, examRecords);
+    hint.style.color = 'var(--green)';
+    hint.textContent = `Saved ${marked.length} student${marked.length===1?'':'s'}.`;
+    if(marked.length === names.length) renderExamsRoster();
+    toast(`${marked.length} entr${marked.length===1?'y':'ies'} saved.`);
+    renderExamsRecords();
+  }
+
+  function renderExamsRecords(){
+    const wrap = document.getElementById('examsRecordsWrap');
+    const fSubject = document.getElementById('eFilterSubject').value;
+    const fClass = document.getElementById('eFilterClass').value;
+    const fExam = document.getElementById('eFilterExam').value.trim().toLowerCase();
+    const fSearch = document.getElementById('eFilterSearch').value.trim().toLowerCase();
+    let list = [...examRecords].sort((a,b)=>b.regNo-a.regNo);
+    if(fSubject) list = list.filter(r=>r.subject===fSubject);
+    if(fClass) list = list.filter(r=>r.class===fClass);
+    if(fExam) list = list.filter(r=>(r.examName||'').toLowerCase().includes(fExam));
+    if(fSearch) list = list.filter(r => (r.student||'').toLowerCase().includes(fSearch) || (r.remarks||'').toLowerCase().includes(fSearch));
+    if(list.length===0){ wrap.innerHTML = `<div class="empty"><div class="big">No exam records yet</div>Log the first scores from the Log tab.</div>`; return; }
+    wrap.innerHTML = `<table class="ledger"><thead><tr><th>No.</th><th>Date</th><th>Student</th><th>Subject</th><th>Class</th><th>Exam</th><th>Marks</th><th>%</th><th>Remarks</th><th>Teacher</th><th></th></tr></thead><tbody>
+      ${list.map(r => {
+        const pct = r.totalMarks ? Math.round((r.marksObtained / r.totalMarks) * 1000) / 10 : 0;
+        const pctClass = pct >= 40 ? 'pct-good' : 'pct-bad';
+        return `<tr>
+          <td class="regno">#${String(r.regNo).padStart(3,'0')}</td>
+          <td>${escapeHtml(r.date)}</td>
+          <td>${escapeHtml(r.student||'—')}</td>
+          <td>${escapeHtml(r.subject)}</td>
+          <td>${escapeHtml(r.class)}</td>
+          <td>${escapeHtml(r.examName)}</td>
+          <td>${escapeHtml(String(r.marksObtained))} / ${escapeHtml(String(r.totalMarks))}</td>
+          <td class="${pctClass}">${pct}%</td>
+          <td class="remarks-cell">${escapeHtml(r.remarks||'—')}</td>
+          <td>${escapeHtml(r.teacherName)}</td>
+          <td>${r.teacherId===currentTeacher.id ? `<button class="icon-btn" onclick="deleteExamRecord(${r.regNo})">Delete</button>` : ``}</td>
+        </tr>`;
+      }).join('')}
+    </tbody></table>`;
+  }
+  async function deleteExamRecord(regNo){
+    if(!confirm('Delete this entry? This cannot be undone.')) return;
+    examRecords = await safeGet(K_EXAMS, examRecords);
+    examRecords = examRecords.filter(r => !(r.regNo===regNo && r.teacherId===currentTeacher.id));
+    await safeSet(K_EXAMS, examRecords);
+    toast('Entry deleted.'); renderExamsRecords();
+  }
+
+  // ---------------- Manage ----------------
+  function renderManage(){
+    document.getElementById('subjectChips').innerHTML = subjects.map(s => `<div class="chip">${escapeHtml(s)} <button onclick="removeSubject('${escapeHtml(s)}')">✕</button></div>`).join('') || '<span class="hint">No subjects yet.</span>';
+    document.getElementById('classChips').innerHTML = classes.map(c => `<div class="chip">${escapeHtml(c)} <button onclick="removeClass('${escapeHtml(c)}')">✕</button></div>`).join('') || '<span class="hint">No classes yet.</span>';
+    document.getElementById('teacherList').innerHTML = teachers.map(t => `<div class="teacher-row"><div class="t-name">${escapeHtml(t.name)}<span class="role-badge">${escapeHtml(t.role||'Teacher')}</span></div></div>`).join('');
+    renderRosterManage();
+  }
+  function renderRosterManage(){
+    const cls = document.getElementById('rosterClassPicker').value;
+    const roster = students[cls] || [];
+    document.getElementById('studentChips').innerHTML = roster.map(name => `<div class="chip">${escapeHtml(name)} <button onclick="removeStudent('${escapeHtml(cls)}','${escapeHtml(name)}')">✕</button></div>`).join('') || '<span class="hint">No students in this class yet.</span>';
+  }
+
+  async function addSubject(){
+    const input = document.getElementById('newSubject'); const val = input.value.trim(); if(!val) return;
+    subjects = await safeGet(K_SUBJECTS, subjects);
+    if(!subjects.includes(val)) subjects.push(val);
+    await safeSet(K_SUBJECTS, subjects); input.value=''; await refreshAll(); toast('Subject added.');
+  }
+  async function removeSubject(val){
+    subjects = await safeGet(K_SUBJECTS, subjects);
+    subjects = subjects.filter(s => s !== val);
+    await safeSet(K_SUBJECTS, subjects); await refreshAll();
+  }
+  async function addClass(){
+    const input = document.getElementById('newClass'); const val = input.value.trim(); if(!val) return;
+    classes = await safeGet(K_CLASSES, classes);
+    if(!classes.includes(val)) classes.push(val);
+    await safeSet(K_CLASSES, classes); input.value=''; await refreshAll(); toast('Class added.');
+  }
+  async function removeClass(val){
+    classes = await safeGet(K_CLASSES, classes);
+    classes = classes.filter(c => c !== val);
+    await safeSet(K_CLASSES, classes); await refreshAll();
+  }
+  async function addStudent(){
+    const cls = document.getElementById('rosterClassPicker').value;
+    const input = document.getElementById('newStudent'); const name = input.value.trim();
+    if(!cls){ toast('Add a class first.'); return; }
+    if(!name) return;
+    students = await safeGet(K_STUDENTS, students);
+    if(!students[cls]) students[cls] = [];
+    if(!students[cls].includes(name)) students[cls].push(name);
+    await safeSet(K_STUDENTS, students); input.value=''; renderRosterManage(); toast('Student added.');
+  }
+  async function removeStudent(cls, name){
+    students = await safeGet(K_STUDENTS, students);
+    if(students[cls]) students[cls] = students[cls].filter(n => n !== name);
+    await safeSet(K_STUDENTS, students); renderRosterManage();
+  }
+  async function addTeacher(){
+    const name = document.getElementById('mgrName').value.trim();
+    const role = document.getElementById('mgrRole').value;
+    const pass = document.getElementById('mgrPass').value;
+    const err = document.getElementById('mgrErr');
+    err.classList.remove('show');
+    teachers = await safeGet(K_TEACHERS, teachers);
+    if(!name || !pass){ err.textContent = 'Fill in name and password.'; err.classList.add('show'); return; }
+    if(pass.length < 4){ err.textContent = 'Password should be at least 4 characters.'; err.classList.add('show'); return; }
+    if(teachers.some(t => nameKey(t.name) === nameKey(name))){ err.textContent = 'An account with that name already exists.'; err.classList.add('show'); return; }
+    teachers.push({ id: nameKey(name), password: pass, name, role });
+    await safeSet(K_TEACHERS, teachers);
+    document.getElementById('mgrName').value=''; document.getElementById('mgrPass').value='';
+    await refreshAll(); toast('Account added.');
+  }
+
+  // ---------------- Filter listeners ----------------
+  ['cFilterSubject','cFilterClass','cFilterTeacher','cFilterStatus','cFilterSearch'].forEach(id => {
+    const el = document.getElementById(id); if(el) el.addEventListener('input', renderCopyRecords);
+  });
+  ['fFilterClass','fFilterMonth','fFilterStatus','fFilterSearch'].forEach(id => {
+    const el = document.getElementById(id); if(el) el.addEventListener('input', renderFeesRecords);
+  });
+  ['eFilterSubject','eFilterClass','eFilterExam','eFilterSearch'].forEach(id => {
+    const el = document.getElementById(id); if(el) el.addEventListener('input', renderExamsRecords);
+  });
+
+  boot();
+</script>
+
+
+</body></html>
